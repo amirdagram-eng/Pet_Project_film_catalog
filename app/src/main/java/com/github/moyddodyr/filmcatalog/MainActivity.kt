@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             FilmCatalogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",тог
+                        name = "Android",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+val key = BuildConfig.TMDB_API_KEY
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
