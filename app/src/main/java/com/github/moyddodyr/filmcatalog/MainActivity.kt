@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.moyddodyr.filmcatalog.ui.theme.FilmCatalogTheme
+import androidx.lifecycle.lifecycleScope
+import com.github.moyddodyr.filmcatalog.data.remote.RetrofitInstance
+import kotlinx.coroutines.launch
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,10 +31,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        lifecycleScope.launch {
+            val result = RetrofitInstance.api.getFilmsPage(
+                apiKey = BuildConfig.TMDB_API_KEY,
+                page = 1
+            )
+            Log.d("тэг", "$result")
+        }
     }
 }
 
-val key = BuildConfig.TMDB_API_KEY
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
