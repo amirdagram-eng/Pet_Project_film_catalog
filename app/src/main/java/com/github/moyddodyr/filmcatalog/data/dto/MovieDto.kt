@@ -6,11 +6,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MovieDto(
     val id: Int,
-    val title: String,
-    val overview: String,
-    @SerialName("backdrop_path") val backdropPath: String?,
-    @SerialName("poster_path") val posterPath: String?,
-    @SerialName("release_date") val releaseDate: String?,
-    @SerialName("vote_average")val voteAverage: Double,
-    @SerialName("vote_count") val voteCount: Int
+    val genres: List<GenreDTO>? = null,
+    val countries: List<CountryDTO>? = null,
+    val rating: RatingDTO? = null,
+    val poster: PosterDTO? = null,
+    val ratingMpaa: String? = null
 )

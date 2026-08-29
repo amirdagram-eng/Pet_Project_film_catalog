@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MovieResponseDto(
     val page: Int,
-    val results: List<MovieDto>
+    val docs: List<MovieDto>
 )

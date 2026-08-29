@@ -6,9 +6,9 @@ import retrofit2.http.Query
 import retrofit2.http.Path
 
 interface MovieApi {
-    @GET("movie/popular")
+    @GET("movie")
     suspend fun getFilmsPage(
-        @Query("api_key") apiKey: String,
+        @Query("token") token: String,
         @Query("page") page: Int
     ): MovieResponseDto
 

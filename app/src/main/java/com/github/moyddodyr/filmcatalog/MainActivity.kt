@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         }
         lifecycleScope.launch {
             val result = RetrofitInstance.api.getFilmsPage(
-                apiKey = BuildConfig.TMDB_API_KEY,
+                token = BuildConfig.TMDB_API_KEY,
                 page = 1
             )
             Log.d("тэг", "$result")
