@@ -6,9 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MovieDto(
     val id: Int,
+    val name: String? = null,
     val genres: List<GenreDTO>? = null,
     val countries: List<CountryDTO>? = null,
     val rating: RatingDTO? = null,
     val poster: PosterDTO? = null,
-    val ratingMpaa: String? = null
+    val ratingMpaa: String? = null,
+    val year: Int? = null,
+    val description: String? = null,
 )
