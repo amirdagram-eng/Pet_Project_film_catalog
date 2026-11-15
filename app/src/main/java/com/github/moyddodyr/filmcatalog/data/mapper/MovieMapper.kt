@@ -10,6 +10,6 @@ fun MovieDto.toDomainModel(): Movie{
         ratingKp = rating as Double?,
         genres = genres,
         year = year,
-         description = description,
+        description = description,
     )
 }

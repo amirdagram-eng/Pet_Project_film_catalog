@@ -16,22 +16,28 @@ import androidx.lifecycle.lifecycleScope
 import com.github.moyddodyr.filmcatalog.data.remote.RetrofitInstance
 import kotlinx.coroutines.launch
 import android.util.Log
+import com.github.moyddodyr.filmcatalog.ui.movies.MovieScreen
 import kotlinx.coroutines.CancellationException
 import okio.IOException
 import retrofit2.HttpException
 import kotlinx.serialization.SerializationException
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class MainActivity : ComponentActivity() {
+    private var movieNames by mutableStateOf<List<String>>(emptyList())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             FilmCatalogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                        MovieScreen(
+                        movieNames = movieNames,
                         modifier = Modifier.padding(innerPadding)
-                    )
+                        )
+
                 }
             }
         }
@@ -41,11 +47,9 @@ class MainActivity : ComponentActivity() {
                     token = BuildConfig.TMDB_API_KEY,
                     page = 1
                 )
-                val moviesCount = result.docs.size //получаем кол-во фильмов
-                val firstMovieName = result.docs.firstOrNull()?.name
-                    ?: "Название отсутствует" //вызов имени первого фильма, если нет - то, что в кавычках
-                Log.d("Movies", "Количество фильмов: $moviesCount")
-                Log.d("Movies", "Название первого фильма: $firstMovieName")
+                movieNames = result.docs.map { movie ->
+                    movie.name ?: "Название отсутствует"
+                }
 
             } catch (e: CancellationException){
                 throw e
