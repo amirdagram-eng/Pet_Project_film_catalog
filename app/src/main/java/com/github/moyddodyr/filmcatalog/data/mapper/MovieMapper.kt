@@ -6,8 +6,8 @@ fun MovieDto.toDomainModel(): Movie{
     return Movie(
         id = id,
         title = name,
-        posterUrl = poster?.toString(),
-        ratingKp = rating as Double?,
+        posterUrl = poster?.url,
+        ratingKp = rating?.kp,
         genres = genres,
         year = year,
         description = description,

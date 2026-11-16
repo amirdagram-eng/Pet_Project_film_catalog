@@ -24,9 +24,13 @@ import kotlinx.serialization.SerializationException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.github.moyddodyr.filmcatalog.data.mapper.toDomainModel
+import com.github.moyddodyr.filmcatalog.domain.model.Movie
 
 class MainActivity : ComponentActivity() {
-    private var movieNames by mutableStateOf<List<String>>(emptyList())
+    private var movies by mutableStateOf<List<Movie>>(emptyList())
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -34,7 +38,9 @@ class MainActivity : ComponentActivity() {
             FilmCatalogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         MovieScreen(
-                        movieNames = movieNames,
+                        movies = movies,
+                        isLoading= isLoading,
+                        errorMessage = errorMessage,
                         modifier = Modifier.padding(innerPadding)
                         )
 
@@ -42,23 +48,30 @@ class MainActivity : ComponentActivity() {
             }
         }
         lifecycleScope.launch {
+            isLoading = true
+            errorMessage = null
             try {
                 val result = RetrofitInstance.api.getFilmsPage(
                     token = BuildConfig.TMDB_API_KEY,
                     page = 1
                 )
-                movieNames = result.docs.map { movie ->
-                    movie.name ?: "Название отсутствует"
+                movies = result.docs.map { movieDto ->
+                    movieDto.toDomainModel()
                 }
 
             } catch (e: CancellationException){
                 throw e
             } catch (e: IOException){
                 Log.e("Movies", "Не удалось получить данные: ошибка соединения", e)
+                errorMessage = "Не удалось загрузить фильмы. Проверьте подключение к интернету."
             } catch (e: HttpException) {
                 Log.e("Movies", "Ошибка сервера: HTTP ${e.code()}", e)
+                errorMessage = "Не удалось загрузить фильмы. HTTP ${e.code()}."
             } catch (e: SerializationException) {
                 Log.e("Movies", "Не удалось разобрать ответ сервера", e)
+                errorMessage = "Не удалось обработать ответ сервера."
+            } finally {
+                isLoading = false
             }
         }
     }
