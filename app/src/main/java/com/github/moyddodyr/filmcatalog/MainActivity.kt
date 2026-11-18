@@ -24,6 +24,7 @@ import kotlinx.serialization.SerializationException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
 import com.github.moyddodyr.filmcatalog.data.mapper.toDomainModel
 import com.github.moyddodyr.filmcatalog.domain.model.Movie
 
@@ -34,19 +35,24 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        loadMovies()
         setContent {
             FilmCatalogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                        MovieScreen(
+                    MovieScreen(
                         movies = movies,
-                        isLoading= isLoading,
+                        isLoading = isLoading,
                         errorMessage = errorMessage,
+                        onRetry = {loadMovies()},
                         modifier = Modifier.padding(innerPadding)
-                        )
+                    )
 
                 }
             }
         }
+
+    }
+    private fun loadMovies() {
         lifecycleScope.launch {
             isLoading = true
             errorMessage = null
@@ -59,9 +65,9 @@ class MainActivity : ComponentActivity() {
                     movieDto.toDomainModel()
                 }
 
-            } catch (e: CancellationException){
+            } catch (e: CancellationException) {
                 throw e
-            } catch (e: IOException){
+            } catch (e: IOException) {
                 Log.e("Movies", "Не удалось получить данные: ошибка соединения", e)
                 errorMessage = "Не удалось загрузить фильмы. Проверьте подключение к интернету."
             } catch (e: HttpException) {
@@ -75,7 +81,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
