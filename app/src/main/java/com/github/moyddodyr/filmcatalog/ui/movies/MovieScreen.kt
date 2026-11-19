@@ -1,6 +1,7 @@
 package com.github.moyddodyr.filmcatalog.ui.movies
 
 import android.os.Message
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +13,15 @@ import com.github.moyddodyr.filmcatalog.domain.model.Movie
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
@@ -46,28 +55,53 @@ fun MovieScreen(
 }
 
 @Composable
-fun MovieItem(movie: Movie){
-    Row (
+fun MovieItem(movie: Movie) {
+    Row(
         modifier = Modifier.padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val posterModifier = Modifier
+            .size(width = 80.dp, height = 120.dp)
+            .clip(RoundedCornerShape(8.dp))
         if (!movie.posterUrl.isNullOrBlank()) {
             AsyncImage(
                 model = movie.posterUrl,
                 contentDescription = movie.title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(width = 80.dp, height = 120.dp)
+                error = painterResource(android.R.drawable.ic_menu_report_image),
+                placeholder = painterResource(android.R.drawable.ic_menu_gallery),
+                modifier = posterModifier
+
+
             )
         } else {
-            Text("Нет постера")
+            Box(
+                modifier = posterModifier
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "Нет постера",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
-        Column(modifier = Modifier)
+
+        Column(
+            modifier = Modifier,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        )
         {
-            Text(text = movie.title ?: "Название отсутствует")
+            Text(
+                text = if (!movie.title.isNullOrBlank()) movie.title else "Название отсутствует",
+                fontWeight = FontWeight.Bold,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2
+            )
             Text(text = if (movie.ratingKp != null) "Рейтинг: ${movie.ratingKp}" else "Рейтинг отсутствует")
             Text(text = if (movie.year != null) "Год: ${movie.year}" else "Год отсутствует")
         }
     }
 }
-
