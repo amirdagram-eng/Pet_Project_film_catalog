@@ -32,6 +32,9 @@ class MainActivity : ComponentActivity() {
     private var movies by mutableStateOf<List<Movie>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private var totalPages by mutableStateOf(0)
+    var currentPage = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -44,6 +47,10 @@ class MainActivity : ComponentActivity() {
                         isLoading = isLoading,
                         errorMessage = errorMessage,
                         onRetry = {loadMovies()},
+                        //onNext = {loadMovies(pageNumber = currentPage + 1)},
+                        onPageClick = {page -> loadMovies(pageNumber = page)},
+                        currentPage = currentPage,
+                        totalPages = totalPages,
                         modifier = Modifier.padding(innerPadding)
                     )
 
@@ -52,18 +59,25 @@ class MainActivity : ComponentActivity() {
         }
 
     }
-    private fun loadMovies() {
+    private fun loadMovies(
+        pageNumber: Int  = 1
+    ) {
         lifecycleScope.launch {
             isLoading = true
             errorMessage = null
+
+
+
             try {
                 val result = RetrofitInstance.api.getFilmsPage(
                     token = BuildConfig.TMDB_API_KEY,
-                    page = 1
+                    page = pageNumber
                 )
                 movies = result.docs.map { movieDto ->
                     movieDto.toDomainModel()
                 }
+                currentPage = pageNumber
+                totalPages = result.pages
 
             } catch (e: CancellationException) {
                 throw e

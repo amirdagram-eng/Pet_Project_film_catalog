@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +33,10 @@ fun MovieScreen(
     isLoading: Boolean,
     errorMessage: String?,
     onRetry: () -> Unit,
+    onPageClick: (Int) -> Unit,
+    //onNext: () -> Unit,
+    currentPage: Int,
+    totalPages: Int,
     modifier: Modifier = Modifier
 ) {
     if (isLoading) {
@@ -45,14 +50,35 @@ fun MovieScreen(
         }
     } else if (movies.isEmpty()) {
         Text(text = "Фильмы не найдены", modifier = modifier)
-    } else {
-        LazyColumn(modifier = modifier) {
+    }  else {
+    Column (
+        modifier = modifier.fillMaxWidth()
+    )
+    {
+
+        LazyColumn(modifier = Modifier.weight(1f)) {
             items(movies) { currentMovie ->
                 MovieItem(movie = currentMovie)
             }
         }
+
+        if(totalPages > 0){
+            var visibleCount = minOf(totalPages, 5)
+            var firstPage = (currentPage - 2).coerceIn(1, totalPages - visibleCount + 1)
+            var lastPage = firstPage + visibleCount - 1
+
+            Row {
+                for (page in firstPage..lastPage) {
+                    Button(onClick = { onPageClick(page) }) {
+                        Text(text = page.toString())
+                    }
+                }
+            }
+        }
+    }
     }
 }
+
 
 @Composable
 fun MovieItem(movie: Movie) {
