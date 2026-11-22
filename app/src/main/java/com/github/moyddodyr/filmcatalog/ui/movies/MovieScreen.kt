@@ -1,6 +1,8 @@
 package com.github.moyddodyr.filmcatalog.ui.movies
 
 import android.os.Message
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,8 +15,14 @@ import com.github.moyddodyr.filmcatalog.domain.model.Movie
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -25,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import androidx.compose.ui.graphics.Color
 
 
 @Composable
@@ -39,45 +48,99 @@ fun MovieScreen(
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    if (isLoading) {
-        CircularProgressIndicator(modifier = modifier)
-    } else if (errorMessage != null) {
-        Column(modifier = modifier) {
-            Text(text = errorMessage)
-            Button(onClick = onRetry) {
-                Text("Повторить")
-            }
-        }
-    } else if (movies.isEmpty()) {
-        Text(text = "Фильмы не найдены", modifier = modifier)
-    }  else {
-    Column (
-        modifier = modifier.fillMaxWidth()
-    )
-    {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.weight(1f))
+        {
+            if (isLoading) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator(
+                        modifier = modifier,
+                        color = Color.Blue
+                    )
+                }
+            } else if (errorMessage != null) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier.fillMaxWidth()
+                ) {
+                    Text(text = errorMessage)
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Blue,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Повторить")
+                    }
+                }
+            } else if (movies.isEmpty()) {
+                Text(text = "Фильмы не найдены", modifier = modifier)
+            } else {
+                Column(
+                    modifier = modifier.fillMaxWidth()
+                )
+                {
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(movies) { currentMovie ->
-                MovieItem(movie = currentMovie)
-            }
-        }
-
-        if(totalPages > 0){
-            var visibleCount = minOf(totalPages, 5)
-            var firstPage = (currentPage - 2).coerceIn(1, totalPages - visibleCount + 1)
-            var lastPage = firstPage + visibleCount - 1
-
-            Row {
-                for (page in firstPage..lastPage) {
-                    Button(onClick = { onPageClick(page) }) {
-                        Text(text = page.toString())
+                    LazyColumn(modifier = Modifier) {
+                        items(movies) { currentMovie ->
+                            MovieItem(movie = currentMovie)
+                        }
                     }
                 }
             }
         }
+                if (totalPages > 0) {
+                    var visibleCount = minOf(totalPages, 5)
+                    var firstPage = (currentPage - 2).coerceIn(1, totalPages - visibleCount + 1)
+                    var lastPage = firstPage + visibleCount - 1
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                    ) {
+                        for (page in firstPage..lastPage) {
+                            key(page) {
+                                val isSelected = page == currentPage
+                                val backgroundColor = if (isSelected) Color.Blue else Color.White
+                                val textColor = if (isSelected) Color.White else Color.Blue
+
+                                val targetWidth = if (isSelected) 50.dp else 40.dp
+                                val animatedWidth = animateDpAsState(
+                                    targetValue = targetWidth,
+                                    label = "Page button width"
+                                )
+                                OutlinedButton(
+                                    onClick = { onPageClick(page) },
+                                    modifier = Modifier.size(
+                                        width = animatedWidth.value,
+                                        height = 40.dp
+                                    ),
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = backgroundColor,
+                                        contentColor = textColor,
+                                    ),
+                                    border = BorderStroke(1.dp, Color.Blue)
+                                )
+                                {
+                                    Text(text = page.toString())
+                                }
+                            }
+                            }
+                        }
+                    }
+                }
     }
-    }
-}
 
 
 @Composable
