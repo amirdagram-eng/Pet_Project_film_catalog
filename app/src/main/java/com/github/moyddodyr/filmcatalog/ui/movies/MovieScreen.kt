@@ -1,5 +1,6 @@
 package com.github.moyddodyr.filmcatalog.ui.movies
 
+import android.icu.text.StringSearch
 import android.os.Message
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
@@ -15,14 +16,20 @@ import com.github.moyddodyr.filmcatalog.domain.model.Movie
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+    import androidx.compose.runtime.mutableStateOf
+    import androidx.compose.runtime.saveable.rememberSaveable
+    import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -46,9 +53,20 @@ fun MovieScreen(
     //onNext: () -> Unit,
     currentPage: Int,
     totalPages: Int,
+    onSearchClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+
+        var text by rememberSaveable { mutableStateOf("") }
+
+        OutlinedTextField(
+            value = text,
+            onValueChange = {text = it},
+            label = { Text("Поиск по названию") },
+            singleLine = true
+        )
+        Button(onClick = { onSearchClick(text) }) { Text("Поиск") }
         Box(modifier = Modifier.weight(1f))
         {
             if (isLoading) {
@@ -98,7 +116,7 @@ fun MovieScreen(
                     var firstPage = (currentPage - 2).coerceIn(1, totalPages - visibleCount + 1)
                     var lastPage = firstPage + visibleCount - 1
 
-                    Row(
+                    LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(
                             8.dp,
                             Alignment.CenterHorizontally
@@ -107,7 +125,8 @@ fun MovieScreen(
                             .fillMaxWidth()
                             .navigationBarsPadding()
                     ) {
-                        for (page in firstPage..lastPage) {
+                        val pages = (firstPage..lastPage).toList()
+                        items(pages, key = {it}) { page ->
                             key(page) {
                                 val isSelected = page == currentPage
                                 val backgroundColor = if (isSelected) Color.Blue else Color.White

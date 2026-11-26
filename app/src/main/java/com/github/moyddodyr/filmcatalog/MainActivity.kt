@@ -27,12 +27,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.github.moyddodyr.filmcatalog.data.mapper.toDomainModel
 import com.github.moyddodyr.filmcatalog.domain.model.Movie
+import retrofit2.http.Query
 
 class MainActivity : ComponentActivity() {
     private var movies by mutableStateOf<List<Movie>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var totalPages by mutableStateOf(0)
+    private var activeQuery by mutableStateOf("")
     var currentPage = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,9 +50,12 @@ class MainActivity : ComponentActivity() {
                         errorMessage = errorMessage,
                         onRetry = {loadMovies()},
                         //onNext = {loadMovies(pageNumber = currentPage + 1)},
-                        onPageClick = {page -> loadMovies(pageNumber = page)},
+                        onPageClick = {page -> loadMovies(pageNumber = page, query = activeQuery)},
                         currentPage = currentPage,
                         totalPages = totalPages,
+                        onSearchClick = { query ->
+                            activeQuery = query
+                            loadMovies(pageNumber = 1, query = activeQuery) },
                         modifier = Modifier.padding(innerPadding)
                     )
 
@@ -60,7 +65,8 @@ class MainActivity : ComponentActivity() {
 
     }
     private fun loadMovies(
-        pageNumber: Int  = 1
+        pageNumber: Int  = 1,
+        query: String = ""
     ) {
         lifecycleScope.launch {
             isLoading = true
@@ -69,10 +75,17 @@ class MainActivity : ComponentActivity() {
 
 
             try {
-                val result = RetrofitInstance.api.getFilmsPage(
-                    token = BuildConfig.TMDB_API_KEY,
-                    page = pageNumber
-                )
+                val result = if(query.isNotBlank()){
+                    RetrofitInstance.api.searchMovies(
+                        token = BuildConfig.TMDB_API_KEY,
+                        page = pageNumber,
+                        movieName = query)
+                } else{
+                    RetrofitInstance.api.getFilmsPage(
+                        token = BuildConfig.TMDB_API_KEY,
+                        page = pageNumber)
+                }
+
                 movies = result.docs.map { movieDto ->
                     movieDto.toDomainModel()
                 }
